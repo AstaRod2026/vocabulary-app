@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/favicon.svg'],
+      includeAssets: ['icons/favicon.svg', 'icons/pwa-192.svg'],
       manifest: {
         name: 'Repertorio',
         short_name: 'Repertorio',
