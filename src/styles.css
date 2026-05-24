@@ -1,0 +1,7 @@
+:root{font-family:Inter,system-ui,sans-serif;color:#1f2937;background:#f3f4f6}
+*{box-sizing:border-box} body{margin:0} .container{max-width:980px;margin:0 auto;padding:1rem}
+h1,h2,h3,h4{color:#111827}.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem}
+button{background:#111827;color:#fff;border:none;padding:.55rem .8rem;border-radius:10px;cursor:pointer;margin:.2rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.8rem}.card{background:#fff;padding:.9rem;border-radius:12px;border:1px solid #e5e7eb}
+textarea{width:100%;min-height:70px;margin-top:.3rem}.tabs,.chips,.row{display:flex;gap:.4rem;flex-wrap:wrap}
+@media (max-width:640px){.container{padding:.7rem}}
