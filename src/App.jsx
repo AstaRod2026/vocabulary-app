@@ -3,48 +3,76 @@ import React, { useMemo, useState } from 'react';
 const STORAGE_KEY = 'repertorio-state-v1';
 const BASE_POINT = 1;
 
-const words = [
-  makeWord(1, 'Parco', 'Moderado y escaso en palabras o en acciones.', 'Fue parco en elogios, pero su mirada aprobaba.'),
-  makeWord(2, 'Ambivalente', 'Que presenta sentimientos opuestos sobre algo.', 'Se mostró ambivalente ante la propuesta de mudanza.'),
-  makeWord(3, 'Acerbo', 'Áspero, duro o crítico en tono.', 'Su comentario acerbo dejó el ambiente tenso.'),
-  makeWord(4, 'Lucidez', 'Claridad mental para comprender o explicar.', 'Con gran lucidez, sintetizó el problema en dos ideas.'),
-  makeWord(5, 'Rumiación', 'Pensamiento repetitivo sobre un tema inquietante.', 'La rumiación le impedía concentrarse en el presente.'),
-  makeWord(6, 'Matizar', 'Aportar matices para precisar o suavizar una idea.', 'Conviene matizar esa afirmación para evitar extremos.'),
-  makeWord(7, 'Desasosiego', 'Inquietud o intranquilidad del ánimo.', 'Sintió desasosiego al esperar noticias inciertas.'),
-  makeWord(8, 'Inmanencia', 'Cualidad de lo que permanece dentro de sí.', 'La obra explora la inmanencia de la experiencia cotidiana.'),
-  makeWord(9, 'Contingencia', 'Posibilidad de que algo ocurra o no.', 'El plan consideraba la contingencia de un corte eléctrico.'),
-  makeWord(10, 'Elocuente', 'Que expresa con claridad y eficacia.', 'Su silencio fue más elocuente que cualquier discurso.'),
-  makeWord(11, 'Sobrio', 'Sencillo, mesurado y sin exceso.', 'Eligió un diseño sobrio para presentar su tesis.'),
-  makeWord(12, 'Susceptible', 'Propenso a recibir la acción de algo o sentirse ofendido.', 'Es susceptible a cambios bruscos de temperatura.')
+const wordData = [
+  { id: 1, term: 'Parco', kind: 'adj', meaning: 'Moderado y escaso en palabras o gestos.', example: 'Fue parco al responder: apenas dijo lo necesario.', base: 'respondió con pocas palabras durante la entrevista', wrongUse: 'una comida estaba muy sabrosa' },
+  { id: 2, term: 'Ambivalente', kind: 'adj', meaning: 'Que muestra dos sentimientos o posturas opuestas a la vez.', example: 'Se sintió ambivalente: quería aceptar el cargo, pero temía perder libertad.', base: 'tenía sentimientos encontrados ante la propuesta', wrongUse: 'un objeto estaba perfectamente ordenado' },
+  { id: 3, term: 'Acerbo', kind: 'adj', meaning: 'Duro, áspero o severo, especialmente al criticar.', example: 'El informe incluyó un juicio acerbo sobre la gestión anterior.', base: 'hizo una crítica muy dura del proyecto', wrongUse: 'un paseo fue relajado y agradable' },
+  { id: 4, term: 'Lucidez', kind: 'noun', meaning: 'Claridad mental para comprender, decidir o expresarse.', example: 'En medio de la crisis, conservó la lucidez para ordenar prioridades.', base: 'explicó el problema con mucha claridad', wrongUse: 'una chaqueta era de color azul' },
+  { id: 5, term: 'Rumiación', kind: 'noun', meaning: 'Pensamiento repetitivo e insistente sobre una preocupación.', example: 'La rumiación sobre aquel error no le dejó dormir.', base: 'volvía una y otra vez al mismo pensamiento', wrongUse: 'una mesa era resistente' },
+  { id: 6, term: 'Matizar', kind: 'verb', meaning: 'Precisar, graduar o suavizar una afirmación añadiendo detalles.', example: 'Quiso matizar su crítica para que no pareciera un ataque personal.', base: 'aclaró una afirmación demasiado tajante con detalles', wrongUse: 'cerrar una ventana' },
+  { id: 7, term: 'Desasosiego', kind: 'noun', meaning: 'Inquietud profunda o intranquilidad del ánimo.', example: 'La llamada inesperada le dejó un desasosiego difícil de explicar.', base: 'sintió una inquietud persistente antes del examen', wrongUse: 'un café estaba caliente' },
+  { id: 8, term: 'Inmanencia', kind: 'noun', meaning: 'Cualidad de lo que pertenece o permanece dentro de algo, no fuera de ello.', example: 'La obra explora la inmanencia de la experiencia cotidiana.', base: 'el sentido pertenecía al interior de la experiencia', wrongUse: 'un paquete llegó tarde' },
+  { id: 9, term: 'Contingencia', kind: 'noun', meaning: 'Hecho posible pero no seguro; eventualidad que puede ocurrir o no.', example: 'El protocolo prevé la contingencia de una falla eléctrica.', base: 'consideraron una eventualidad posible durante la planificación', wrongUse: 'una certeza absoluta' },
+  { id: 10, term: 'Elocuente', kind: 'adj', meaning: 'Que expresa o comunica con fuerza, claridad y eficacia.', example: 'Su gesto fue elocuente: todos entendieron su desacuerdo.', base: 'expresó mucho sin necesidad de explicarse', wrongUse: 'una caja estaba cerrada' },
+  { id: 11, term: 'Sobrio', kind: 'adj', meaning: 'Mesurado, sencillo y sin adornos o excesos.', example: 'La ceremonia tuvo un tono sobrio y respetuoso.', base: 'eligió un estilo sencillo y sin excesos', wrongUse: 'una fiesta fue ruidosa y recargada' },
+  { id: 12, term: 'Susceptible', kind: 'adj', meaning: 'Propenso a verse afectado por algo o a sentirse ofendido.', example: 'El material es susceptible a la humedad si no se protege.', base: 'podía verse afectado por cambios pequeños', wrongUse: 'una ruta era más corta' }
 ];
 
-function makeWord(id, term, meaning, example) {
-  const genresPool = ['Literarias', 'Filosóficas', 'Psicológicas', 'Artísticas', 'Académicas', 'Emocionales', 'Cotidianas elegantes', 'Argumentativas'];
-  const usesPool = ['Para escribir mejor', 'Para sonar más preciso', 'Para describir emociones', 'Para ensayos universitarios', 'Para conversaciones profundas', 'Para argumentar mejor', 'Para describir personas', 'Para narrar experiencias', 'Para expresar conflicto interno'];
+const genresPool = ['Literarias', 'Filosóficas', 'Psicológicas', 'Artísticas', 'Académicas', 'Emocionales', 'Cotidianas elegantes', 'Argumentativas'];
+const usesPool = ['Para escribir mejor', 'Para sonar más preciso', 'Para describir emociones', 'Para ensayos universitarios', 'Para conversaciones profundas', 'Para argumentar mejor', 'Para describir personas', 'Para narrar experiencias', 'Para expresar conflicto interno'];
+
+const words = wordData.map((word) => ({
+  ...word,
+  genres: [genresPool[word.id % genresPool.length], genresPool[(word.id + 2) % genresPool.length]],
+  uses: [usesPool[word.id % usesPool.length], usesPool[(word.id + 3) % usesPool.length]],
+  exercises: createExercises(word)
+}));
+
+function createExercises({ term, kind, base, wrongUse }) {
+  const lower = term.toLowerCase();
+  const easyByKind = {
+    adj: [
+      [`Su respuesta fue ${lower}: precisa, breve y sin adornos.`, `Su respuesta fue ${lower} porque estaba escrita en tinta negra.`, `Su respuesta fue ${lower} al llegar dentro de un sobre.`],
+      [`El tono del informe resultó ${lower} y cambió la lectura del caso.`, `El tono del informe resultó ${lower} porque tenía muchas páginas.`, `El tono del informe resultó ${lower} al imprimirse en la oficina.`],
+      [`La actitud ${lower} del personaje explica mejor la escena.`, `La actitud ${lower} del personaje se guardó en un cajón.`, `La actitud ${lower} del personaje midió varios centímetros.`],
+      [`En ese contexto, decir que fue ${lower} añade un matiz preciso.`, `En ese contexto, decir que fue ${lower} sirve para nombrar un color.`, `En ese contexto, decir que fue ${lower} indica que compró fruta.`],
+      [`La descripción es ${lower} porque comunica exactamente esa cualidad.`, `La descripción es ${lower} porque la calle estaba mojada.`, `La descripción es ${lower} porque el vaso estaba lleno.`]
+    ],
+    noun: [
+      [`La ${lower} le permitió entender mejor lo que ocurría.`, `La ${lower} quedó sobre la mesa junto a las llaves.`, `La ${lower} tenía un precio rebajado en la tienda.`],
+      [`Sintió ${lower} al notar que la situación no estaba resuelta.`, `Sintió ${lower} porque la silla era de madera.`, `Sintió ${lower} al cambiar una bombilla.`],
+      [`El texto presenta la ${lower} como una experiencia reconocible.`, `El texto presenta la ${lower} como un utensilio de cocina.`, `El texto presenta la ${lower} como una calle cerrada.`],
+      [`Hablar de ${lower} ayuda a nombrar ese proceso interno.`, `Hablar de ${lower} ayuda a pesar la bolsa del mercado.`, `Hablar de ${lower} ayuda a describir una pared recién pintada.`],
+      [`La escena transmite ${lower} sin decirlo de manera explícita.`, `La escena transmite ${lower} porque el tren salió a tiempo.`, `La escena transmite ${lower} al servir café con leche.`]
+    ],
+    verb: [
+      [`Conviene ${lower} la afirmación para evitar una conclusión extrema.`, `Conviene ${lower} la maleta antes de subir al tren.`, `Conviene ${lower} la puerta con una llave nueva.`],
+      [`La autora decide ${lower} su postura después de revisar los datos.`, `La autora decide ${lower} las plantas del balcón.`, `La autora decide ${lower} una taza rota.`],
+      [`Puedes ${lower} esa crítica si añades una excepción importante.`, `Puedes ${lower} esa crítica si cambias la batería del reloj.`, `Puedes ${lower} esa crítica si compras pan.`],
+      [`El debate mejoró cuando alguien quiso ${lower} la acusación inicial.`, `El debate mejoró cuando alguien quiso ${lower} una silla plegable.`, `El debate mejoró cuando alguien quiso ${lower} el paraguas.`],
+      [`Antes de responder, intentó ${lower} lo que había dicho.`, `Antes de responder, intentó ${lower} la ventana cerrada.`, `Antes de responder, intentó ${lower} una receta de sopa.`]
+    ]
+  };
+
   return {
-    id,
-    term,
-    meaning,
-    example,
-    genres: [genresPool[id % genresPool.length], genresPool[(id + 2) % genresPool.length]],
-    uses: [usesPool[id % usesPool.length], usesPool[(id + 3) % usesPool.length]],
-    exercises: {
-      easy: Array.from({ length: 5 }).map((_, i) => ({
-        options: [
-          `Usó "${term}" con precisión en su intervención número ${i + 1}.`,
-          `La palabra "${term}" se rompió en el suelo número ${i + 1}.`,
-          `Compró dos kilos de "${term}" en la feria ${i + 1}.`
-        ],
-        correct: 0
-      })),
-      medium: Array.from({ length: 5 }).map((_, i) => `Reescribe: "La idea ${i + 1} necesita mayor precisión" usando "${term}".`),
-      hard: Array.from({ length: 3 }).map((_, i) => `Escribe una oración original (${i + 1}/3) usando "${term}".`),
-      extra: [
-        { context: `En un ensayo formal, quieres precisar una idea con "${term}".`, correct: 'Adecuado' },
-        { context: `Hablas de cocinar pasta y metes "${term}" sin relación.`, correct: 'Inadecuado' },
-        { context: `Conversación casual donde "${term}" podría caber, pero no es necesario.`, correct: 'Neutral' }
-      ]
-    }
+    easy: easyByKind[kind].map((options) => ({ options, correct: 0 })),
+    medium: [
+      `Reescribe usando "${term}": "La persona ${base}."`,
+      `Reescribe usando "${term}": "El texto muestra que alguien ${base}."`,
+      `Reescribe usando "${term}": "Durante la conversación se notó que alguien ${base}."`,
+      `Reescribe usando "${term}": "La situación puede describirse así: alguien ${base}."`,
+      `Reescribe usando "${term}": "Quiero expresar con más precisión que alguien ${base}."`
+    ],
+    hard: [
+      `Escribe una oración cotidiana usando "${term}".`,
+      `Escribe una oración formal usando "${term}".`,
+      `Escribe una oración personal o reflexiva usando "${term}".`
+    ],
+    extra: [
+      { context: `Estás describiendo una situación realista en la que alguien ${base}.`, correct: 'Adecuado' },
+      { context: `Quieres hablar de ${wrongUse}; usar "${lower}" desviaría el sentido.`, correct: 'Inadecuado' },
+      { context: `Conversas con un amigo y usas "${lower}" para precisar la idea, aunque podrías decirlo de forma más simple.`, correct: 'Neutral' }
+    ]
   };
 }
 
@@ -106,7 +134,7 @@ const WordCard = ({ word, status, actions }) => <article className="card"><h3>{w
 
 function Library({ onBack, state, onPractice, onAddList }) { const [tab, setTab] = useState('genres'); const categories = tab === 'genres' ? [...new Set(words.flatMap((w) => w.genres))] : [...new Set(words.flatMap((w) => w.uses))]; const [selected, setSelected] = useState(categories[0]); const list = words.filter((w) => (tab === 'genres' ? w.genres : w.uses).includes(selected)); return <div className="container"><button onClick={onBack}>← Volver</button><h2>Biblioteca de palabras</h2><div className="tabs"><button onClick={() => setTab('genres')}>Por género</button><button onClick={() => setTab('uses')}>Por uso</button></div><div className="chips">{categories.map((c) => <button key={c} onClick={() => setSelected(c)}>{c}</button>)}</div><div className="cards">{list.map((w) => <WordCard key={w.id} word={w} status={state.learned[w.id] ? state.learned[w.id].category : state.postponed[w.id] ? 'Pospuesta' : 'Nueva'} actions={<div className="row"><button onClick={() => onPractice(w)}>Practicar ahora</button><button onClick={() => onAddList(w)}>Añadir a mi lista</button></div>} />)}</div></div>; }
 
-function PracticeMode({ word, onDone, onBack }) { const [easy, setEasy] = useState(Array(5).fill(null)); const [medium, setMedium] = useState(Array(5).fill('')); const [hard, setHard] = useState(Array(3).fill('')); const [extra, setExtra] = useState(Array(3).fill(null)); const evaluate = () => { const easyPoints = easy.reduce((acc, a, i) => acc + (a === word.exercises.easy[i].correct ? 4 : 0), 0); const mediumPoints = medium.reduce((acc, t) => acc + (t.toLowerCase().includes(word.term.toLowerCase()) && t.length > 24 ? 5 : 0), 0); const hardAccepted = hard.filter((t) => t.toLowerCase().includes(word.term.toLowerCase()) && t.length > 24); const hardPoints = hardAccepted.length * 10; const extraPoints = extra.reduce((acc, a, i) => acc + (a === word.exercises.extra[i].correct ? 8 : 0), 0); const score = BASE_POINT + easyPoints + mediumPoints + hardPoints + extraPoints; const approved = score >= 60 && hardAccepted.length >= 1; onDone({ score, approved, category: approved ? classify(score) : 'No aprendida', hardAnswers: hard, mediumAnswers: medium, date: new Date().toISOString() }); }; return <div className="container"><button onClick={onBack}>← Salir</button><h2>Hazte con esta palabra: {word.term}</h2><section><h3>Nivel fácil</h3>{word.exercises.easy.map((ex, i) => <div key={i} className="card"><p>Ejercicio {i + 1}</p>{ex.options.map((o, idx) => <label key={idx}><input type="radio" name={`easy-${i}`} onChange={() => setEasy((p) => { const n = [...p]; n[i] = idx; return n; })} /> {o}</label>)}</div>)}</section><section><h3>Nivel medio</h3>{word.exercises.medium.map((p, i) => <div key={i} className="card"><p>{p}</p><textarea onChange={(e) => setMedium((prev) => { const n = [...prev]; n[i] = e.target.value; return n; })} /></div>)}</section><section><h3>Nivel difícil</h3>{word.exercises.hard.map((p, i) => <div key={i} className="card"><p>{p}</p><textarea onChange={(e) => setHard((prev) => { const n = [...prev]; n[i] = e.target.value; return n; })} /></div>)}</section><section><h3>Nivel extra</h3>{word.exercises.extra.map((c, i) => <div key={i} className="card"><p>{c.context}</p>{['Adecuado', 'Inadecuado', 'Neutral'].map((o) => <button key={o} onClick={() => setExtra((p) => { const n = [...p]; n[i] = o; return n; })}>{o}</button>)}</div>)}</section><button onClick={evaluate}>Finalizar práctica</button></div>; }
+function PracticeMode({ word, onDone, onBack }) { const [easy, setEasy] = useState(Array(5).fill(null)); const [medium, setMedium] = useState(Array(5).fill('')); const [hard, setHard] = useState(Array(3).fill('')); const [extra, setExtra] = useState(Array(3).fill(null)); const evaluate = () => { const easyPoints = easy.reduce((acc, a, i) => acc + (a === word.exercises.easy[i].correct ? 4 : 0), 0); const mediumPoints = medium.reduce((acc, t) => acc + (t.toLowerCase().includes(word.term.toLowerCase()) && t.length > 24 ? 5 : 0), 0); const hardAccepted = hard.filter((t) => t.toLowerCase().includes(word.term.toLowerCase()) && t.length > 24); const hardPoints = hardAccepted.length * 10; const extraPoints = extra.reduce((acc, a, i) => acc + (a === word.exercises.extra[i].correct ? 8 : 0), 0); const score = BASE_POINT + easyPoints + mediumPoints + hardPoints + extraPoints; const approved = score >= 60 && hardAccepted.length >= 1; onDone({ score, approved, category: approved ? classify(score) : 'No aprendida', hardAnswers: hard, mediumAnswers: medium, date: new Date().toISOString() }); }; return <div className="container"><button onClick={onBack}>← Salir</button><h2>Hazte con esta palabra: {word.term}</h2><section><h3>Nivel fácil</h3>{word.exercises.easy.map((ex, i) => <div key={i} className="card"><p>Elige la opción correcta.</p>{ex.options.map((o, idx) => <label key={idx} className="option"><input type="radio" name={`easy-${i}`} onChange={() => setEasy((p) => { const n = [...p]; n[i] = idx; return n; })} /> <span>{o}</span></label>)}</div>)}</section><section><h3>Nivel medio</h3>{word.exercises.medium.map((p, i) => <div key={i} className="card"><p>{p}</p><textarea onChange={(e) => setMedium((prev) => { const n = [...prev]; n[i] = e.target.value; return n; })} /></div>)}</section><section><h3>Nivel difícil</h3>{word.exercises.hard.map((p, i) => <div key={i} className="card"><p>{p}</p><textarea onChange={(e) => setHard((prev) => { const n = [...prev]; n[i] = e.target.value; return n; })} /></div>)}</section><section><h3>Nivel extra</h3>{word.exercises.extra.map((c, i) => <div key={i} className="card"><p>{c.context}</p>{['Adecuado', 'Inadecuado', 'Neutral'].map((o) => <button key={o} onClick={() => setExtra((p) => { const n = [...p]; n[i] = o; return n; })}>{o}</button>)}</div>)}</section><button onClick={evaluate}>Finalizar práctica</button></div>; }
 
 function ResultScreen({ word, result, onRepeat, onLater, onHome }) { return <div className="container"><h2>Resultado: {word.term}</h2><p>Puntaje: {result.score}/100</p><p>Estado: {result.approved ? result.category : 'Todavía no está lista. Puedes intentarlo más tarde'}</p>{result.approved ? <p>Esta palabra ya forma parte de tu repertorio.</p> : <><p>Todavía no cumples los requisitos para dar esta palabra como aprendida.</p><button onClick={onRepeat}>Repetir ejercicios</button><button onClick={onLater}>Intentarlo más tarde</button></>}<button onClick={onHome}>Volver al inicio</button></div>; }
 
